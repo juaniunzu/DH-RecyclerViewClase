@@ -19,9 +19,15 @@ import java.util.List;
 public class PersonajesAdapter extends RecyclerView.Adapter {
 
     private List<Personaje> listaDePersonajes;
+    //tiene un escuchador que se pasara como parametro en el constructor.
+    // al momento de crear el adapter (instanciarlo),
+    // la clase que se pase como parametro será quien escuche,
+    // por lo tanto tendra que implementar la interfaz para ser parámetro válido
+    private PersonajesAdapterListener listener;
 
-    public PersonajesAdapter(List<Personaje> listaDePersonajes) {
+    public PersonajesAdapter(List<Personaje> listaDePersonajes, PersonajesAdapterListener listener) {
         this.listaDePersonajes = listaDePersonajes;
+        this.listener = listener;
     }
 
     /**
@@ -58,9 +64,15 @@ public class PersonajesAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
+        //tomo el personaje que se muestra en una variable local
         Personaje personajeAMostrar = this.listaDePersonajes.get(position);
-        RecyclerView.ViewHolder elHolder = (PersonajeViewHolder) holder;
-        ((PersonajeViewHolder) holder).cargarPersonaje(personajeAMostrar);
+
+        //casteo el parametro holder para que sea tipo PersonajeViewHolder,
+        //lo que le dara el metodo cargarPersonaje()
+        PersonajeViewHolder elHolder = (PersonajeViewHolder) holder;
+
+        //cargo el personaje de la variable local en la celda
+        elHolder.cargarPersonaje(personajeAMostrar);
 
     }
 
@@ -87,6 +99,27 @@ public class PersonajesAdapter extends RecyclerView.Adapter {
             imageViewPersonaje = itemView.findViewById(R.id.celdaPersonajeImageViewPersonaje);
             textViewPersonajeNombre = itemView.findViewById(R.id.celdaPersonajeTextViewPersonaje);
             textViewPersonajeSerieOrigen = itemView.findViewById(R.id.celdaPersonajeTextViewSerie);
+
+            //seteo el onClickListener
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //le pedimos al adapter la posicion donde se esta haciendo click
+                    Integer adapterPosition = getAdapterPosition();
+
+                    //consigo el personaje segun la posicion del click sacada arriba
+                    Personaje personaje = listaDePersonajes.get(adapterPosition);
+
+                    //corro el metodo hicieronClick que es parte del parametro (this.)listener,
+                    //le paso como parametro el personaje tomado aca arriba. Este metodo
+                    //hara distintas cosas segun en qué actividad se encuentre la celda clickeada.
+                    //nos damos cuenta de esto porque al momento de instanciar el adapter en una
+                    //actividad, le tendremos que pasar dicha actividad como parametro de escuchador (listener)
+
+                    listener.hicieronClick(personaje);
+
+                }
+            });
         }
 
         //aca se enlaza cada personaje con cada celda
@@ -99,6 +132,14 @@ public class PersonajesAdapter extends RecyclerView.Adapter {
         }
 
 
+    }
+
+    // esta interface es la que dice que cuando una clase la implementa se
+    // transforma en una "escuchadora" de lo que el click en la celda quiere decir.
+    // cada clase que la implemente tendra que reescribir el metodo hicieronClick()
+    // e indicará qué es lo que tiene que hacer cuando eso pasa
+    public interface PersonajesAdapterListener{
+        public void hicieronClick(Personaje unPersonaje);
     }
 
 
